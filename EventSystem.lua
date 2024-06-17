@@ -4,62 +4,67 @@ if EventSystem == nil then
 
   EventSystem.EmptyEvent = function() end
 
-  EventSystem.CreatEventData = function(view, eventName)
-    local hasView, hasEventName = EventSystem.HasEventData(view, eventName)
+  EventSystem.CreatEventData = function(viewId, eventName)
+    local has, hasView, hasEventName = EventSystem.HasEventData(viewId, eventName)
     if !hasView then
-      EventSystem.events[view] ={}
+      EventSystem.events[viewId] ={}
     end
     if !hasEventName then
-      EventSystem.events[view][eventName] ={}
+      EventSystem.events[viewId][eventName] ={}
     end
   end
 
-  EventSystem.HasEventData = function(view, eventName)
-    local hasView = EventSystem.events[view] != nil
-    return hasView, hasView and EventSystem.events[view][eventName] != nil or false
+  EventSystem.HasEventData = function(viewId, eventName)
+    local hasView = EventSystem.events[viewId] != nil
+    local hasEventName = hasView and EventSystem.events[viewId][eventName] != nil or false
+    return hasView and hasEventName, hasView, hasEventName
   end
 
   EventSystem.OverrideView = function(view, eventName)
-    if EventSystem.events[view][eventName.."Override"] == nil then
-      EventSystem.events[view][eventName.."Override"] = function(...)
+    local viewId = view.getId()
+    if EventSystem.events[viewId][eventName.."Override"] == nil then
+      EventSystem.events[viewId][eventName.."Override"] = function(...)
         local returnContent = nil
-        for k, v in pairs(EventSystem.events[view][eventName]) do
+        for k, v in pairs(EventSystem.events[viewId][eventName]) do
           returnContent = v(...)
         end
         if returnContent ~= nil then return returnContent end
       end
-      view[eventName] = EventSystem.events[view][eventName.."Override"]
+      view[eventName] = EventSystem.events[viewId][eventName.."Override"]
     end
   end
 
   EventSystem.AddEvent = function(view, eventName, event, func)
-    EventSystem.CreatEventData(view, eventName)
-    EventSystem.events[view][eventName][event] = func
+    local viewId = view.getId()
+    EventSystem.CreatEventData(viewId, eventName)
+    EventSystem.events[viewId][eventName][event] = func
     EventSystem.OverrideView(view, eventName)
   end
 
   EventSystem.HasEvent = function(view, eventName, event)
-    if EventSystem.HasEventData(view, eventName) then
-      return EventSystem.events[view][eventName][event] != nil
+    local viewId = view.getId()
+    if EventSystem.HasEventData(viewId, eventName) then
+      return EventSystem.events[viewId][eventName][event] ~= nil
     end
     return false
   end
 
   EventSystem.RemoveEvent = function(view, eventName, event)
-    if EventSystem.HasEventData(view, eventName) and EventSystem.events[view][eventName][event] ~= nil then
-      EventSystem.events[view][eventName][event] = nil
-      if #EventSystem.events[view][eventName] == 0 then
+    local viewId = view.getId()
+    if EventSystem.HasEventData(viewId, eventName) then
+      EventSystem.events[viewId][eventName][event] = nil
+      if #EventSystem.events[viewId][eventName] == 0 then
         view[eventName] = EventSystem.EmptyEvent
-        EventSystem.events[view][eventName.."Override"] = nil
+        EventSystem.events[viewId] = nil
       end
     end
   end
 
   EventSystem.RemoveEvents = function(view, eventName)
-    if EventSystem.HasEventData(view, eventName) then
+    local viewId = view.getId()
+    if EventSystem.HasEventData(viewId, eventName) then
       view[eventName] = EventSystem.EmptyEvent
-      EventSystem.events[view][eventName.."Override"] = nil
-      table.clear(EventSystem.events[view][eventName])
+      EventSystem.events[viewId] = nil
     end
   end
 end

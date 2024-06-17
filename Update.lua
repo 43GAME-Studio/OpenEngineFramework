@@ -55,13 +55,13 @@ if Update == nil then
       if v == monoBehaviour then
         if v.OnDestroy ~= nil then v:OnDestroy() end
 
-        if EventSystem.HasEvent(monoBehaviour) then
+        if EventSystem.HasEvent(monoBehaviour.viewObject, "onClick", monoBehaviour) then
           EventSystem.RemoveEvent(monoBehaviour.viewObject, "onClick", monoBehaviour)
         end
-        if EventSystem.HasEvent(monoBehaviour) then
+        if EventSystem.HasEvent(monoBehaviour.viewObject, "onTouch", monoBehaviour) then
           EventSystem.RemoveEvent(monoBehaviour.viewObject, "onTouch", monoBehaviour)
         end
-        if EventSystem.HasEvent(monoBehaviour) then
+        if EventSystem.HasEvent(monoBehaviour.viewObject, "onLongClick", monoBehaviour) then
           EventSystem.RemoveEvent(monoBehaviour.viewObject, "onLongClick", monoBehaviour)
         end
 
